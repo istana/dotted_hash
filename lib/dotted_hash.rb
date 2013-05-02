@@ -5,6 +5,7 @@ require 'active_model'
 require 'active_support/core_ext/string/inflections'
 require 'active_support/json'
 
+# See Readme.md in gem/repository directory for usage instructions
 class DottedHash
 	extend  ActiveModel::Naming
 	include ActiveModel::Conversion
@@ -12,22 +13,22 @@ class DottedHash
 
 	## Basic security
 
-	# Maximum depth of whole tree, not keys (keys depth+1)
-	# Counted from 0
-	# Not fully bulletproof, depth may be set to wrong number if careless
+	# Maximum depth of whole tree, not keys (keys depth+1).
+	# Counted from 0.
+	# Not fully bulletproof, depth may be set to wrong number if careless.
 	MAX_DEPTH = 10
 
-	# Maximum count of attributes
-	# Use hash like this to specify each level
+	# Maximum count of attributes.
+	# Use hash like this to specify each level.
 	# MAX_ATTRS = {1 => 20, 2 => 5, default: 10}
 	MAX_ATTRS = 10
 
-	# Maximum size of document, counted from JSON result of document
-	# It is not bulletproof, but if using simple structures, it is enough
-	# Other structures may have much bigger representation in memory than in JSON
+	# Maximum size of document, counted from JSON result of document.
+	# It is not bulletproof, but if using simple structures, it is enough.
+	# Other structures may have much bigger representation in memory than in JSON.
 	MAX_SIZE = 16384
 
-	# Create new instance, recursively converting all Hashes to Item
+	# Create new instance, recursively converting all Hashes to DottedHash
 	# and leaving everything else alone.
 	#
 	def initialize(args={}, level=0)
@@ -76,8 +77,11 @@ class DottedHash
 		end
 	end
 
+	# Always respond to write.
+	# Respond to attribute or defined method.
+	#
 	def respond_to?(method_name, include_private = false)
-		# answer to any write method
+		# answers to any write method
 		if method_name.to_s[-1] == '='
 			true
 		else
@@ -85,6 +89,9 @@ class DottedHash
 		end
 	end
 
+	# Recursively assigns value.
+	# Also creates sub-DottedHashes if they don't exist).
+	#
 	def recursive_assign(key, value)
 		return nil if key.blank?
 		keys = key.split('.')
@@ -101,14 +108,20 @@ class DottedHash
 		end
 	end
 
+	# Provides access to attribute.
+	# Use when you have spaces and other non +a-z_+ characters in attribute name.
+	#
 	def [](key)
 		@attributes[key.to_sym]
 	end
 
+	# Returns +id+ of document
+	#
 	def id
 		@attributes[:_id] || @attributes[:id]
 	end
 
+	# Returns +type+ of document
 	def type
 		@attributes[:_type] || @attributes[:type]
 	end
@@ -117,14 +130,17 @@ class DottedHash
 		!!id
 	end
 
+	# Standard ActiveModel Errors
 	def errors
 		ActiveModel::Errors.new(self)
 	end
 
+	# Always +true+
 	def valid?
 		true
 	end
 
+	# Returns key if key exists
 	def to_key
 		persisted? ? [id] : nil
 	end
@@ -138,11 +154,15 @@ class DottedHash
 
 	alias_method :to_h, :to_hash
 
+	# Returns (filtered) Ruby +Hash+ with characters 
+	# and objects only allowed in JSON.
+	#
 	def as_json(options=nil)
 		hash = to_hash
 		hash.respond_to?(:with_indifferent_access) ? hash.with_indifferent_access.as_json(options) : hash.as_json(options)
 	end
 
+	# JSON string of +as_json+ result
 	def to_json(options=nil)
 		as_json.to_json(options)
 	end

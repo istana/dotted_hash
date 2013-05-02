@@ -18,3 +18,11 @@ task :test do
     system("rspec #{unit}")
   end
 end
+
+require 'rdoc/task'
+Rake::RDocTask.new do |rd|
+  rd.main = "README.md"
+  rd.rdoc_files.include("README.md", "lib/*.rb")
+  rd.options << "--all"
+  rd.title = "Enjoy DottedHash!"
+end

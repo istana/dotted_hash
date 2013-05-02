@@ -40,7 +40,6 @@ Or install it yourself as:
 if key has spaces
 
     > document.quotes['Duke Nukem Forever']
-    > document.quotes['Duke Nukem Forever']
 
 nested
 
