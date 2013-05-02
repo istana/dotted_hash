@@ -9,12 +9,32 @@ class DottedHash
 	extend  ActiveModel::Naming
 	include ActiveModel::Conversion
 	#include ActiveModel::Model
+
+	## Basic security
+
+	# Maximum depth of whole tree, not keys (keys depth+1)
+	# Counted from 0
+	# Not fully bulletproof, depth may be set to wrong number if careless
+	MAX_DEPTH = 10
+
+	# Maximum count of attributes
+	# Use hash like this to specify each level
+	# MAX_ATTRS = {1 => 20, 2 => 5, default: 10}
+	MAX_ATTRS = 10
+
+	# Maximum size of document, counted from JSON result of document
+	# It is not bulletproof, but if using simple structures, it is enough
+	# Other structures may have much bigger representation in memory than in JSON
+	MAX_SIZE = 16384
+
 	# Create new instance, recursively converting all Hashes to Item
 	# and leaving everything else alone.
 	#
-	# TODO: track depth
-	def initialize(args={})
+	def initialize(args={}, level=0)
 		raise ArgumentError, "Please pass a Hash-like object" unless args.respond_to?(:each_pair)
+		raise RuntimeError, "Maximal depth reached" if level > MAX_DEPTH
+
+		@depth = level
 		@attributes = {}
 		args.each_pair do |key, value|
 			assign_value(key, value)
@@ -22,12 +42,26 @@ class DottedHash
 	end
 
 	def assign_value(key, value)
+		max_attrs = if MAX_ATTRS.is_a?(Fixnum)
+									MAX_ATTRS
+								elsif MAX_ATTRS.respond_to?(:[])
+									MAX_ATTRS[@depth] || MAX_ATTRS[:default]
+								end
+
+		if max_attrs
+			attrs = @attributes.size + (@attributes.include?(key.to_sym) ? 0 : 1)
+			raise RuntimeError, "Maximum number of attributes reached" if attrs > max_attrs
+		end
+
+		raise RuntimeError, "Maximal size of document reached" if self.to_json.size+value.to_json.size > MAX_SIZE
+
 		if value.is_a?(Array)
-			@attributes[key.to_sym] = value.map { |item| @attributes[key.to_sym] = item.is_a?(Hash) ? DottedHash.new(item.to_hash) : item }
+			@attributes[key.to_sym] = value.map { |item| @attributes[key.to_sym] = item.is_a?(Hash) ? DottedHash.new(item.to_hash, @depth+1) : item }
 		else
-			@attributes[key.to_sym] = value.is_a?(Hash) ? DottedHash.new(value.to_hash) : value
+			@attributes[key.to_sym] = value.is_a?(Hash) ? DottedHash.new(value.to_hash, @depth+1) : value
 		end
 	end
+
 	private :assign_value
 
 	# Delegate method to a key in underlying hash, if present, otherwise return +nil+.
@@ -57,13 +91,13 @@ class DottedHash
 		if keys.size > 1
 			key = keys.shift.to_sym
 
-			if !self.send(key)
-				self.send("#{key}=", DottedHash.new)
+			if !@attributes[key]
+				assign_value(key, DottedHash.new({}, @depth+1))
 			end
-			sub = self.send(key)
+			sub = @attributes[key]
 			sub.send(:recursive_assign, keys.join('.'), value)
 		elsif keys.size == 1
-			self.send("#{keys.shift}=", value)
+			assign_value(keys.shift, value)
 		end
 	end
 

@@ -17,7 +17,7 @@ describe DottedHash do
 			expect{ DottedHash.new(id: 1) }.not_to raise_error
 			DottedHash.new(id: 1).should_be_instance_of :N
 			expect(DottedHash.new(id: 1)).to be_instance_of(DottedHash)
-			
+
 			expect do
 				class AlmostHash < Hash; end
 				DottedHash.new(AlmostHash.new(id: 1))
@@ -188,6 +188,77 @@ describe DottedHash do
 				document = DottedHash.new(_type: 'my_model', title: 'Test', author: { name: 'John' })
 
 				expect(document.class).to eq(DottedHash)
+			end
+		end
+
+		context "Security" do
+			describe "MAX_DEPTH" do
+				it "has good depth" do
+					hash = {}
+					ptr = hash
+					for i in (0..DottedHash::MAX_DEPTH-1) do
+						ptr.merge!({i.to_s => {}})
+						ptr = ptr[i.to_s]
+					end
+
+					expect{ DottedHash.new(hash) }.not_to raise_error
+				end
+
+				it "is too deep" do
+					hash = {}
+					ptr = hash
+					for i in (0..DottedHash::MAX_DEPTH) do
+						ptr.merge!({i.to_s => {}})
+						ptr = ptr[i.to_s]
+					end
+
+					expect{ DottedHash.new(hash)}.to raise_error(RuntimeError, /depth/)
+				end
+			end
+
+			describe "MAX_ATTRS" do
+				context "Integer value" do
+					it "is in limit" do
+						stub_const("DottedHash::MAX_ATTRS", 3)
+						expect{ DottedHash.new(a: 1, b: 2, c: 3) }.not_to raise_error
+					end
+
+					it "is not in limit" do
+						stub_const("DottedHash::MAX_ATTRS", 3)
+						expect{ DottedHash.new(a: 1, b: 2, c: 3, d: 4) }.to raise_error(RuntimeError, /attribu/)
+					end
+				end
+
+				context "Depths specified" do
+					it "is set with key 'default'" do
+						stub_const("DottedHash::MAX_ATTRS", {1 => 3, default: 2})
+
+						expect{ DottedHash.new(a: 1, b: 2) }.not_to raise_error
+						expect{ DottedHash.new(a: 1, b: 2, c: 3) }.to raise_error(RuntimeError, /attribu/)
+
+						expect{ DottedHash.new(a: 1, b: {one: 1, two: 2, three: 3}) }.not_to raise_error
+						expect{ DottedHash.new(a: 1, b: {one: 1, two: 2, three: 3, four: 4}) }.to raise_error(RuntimeError, /attribu/)
+					end
+
+					it "is not set with key 'default'" do
+						stub_const("DottedHash::MAX_ATTRS", {0 => 3})
+
+						expect{ DottedHash.new(a: 1, b: 2, c: 3) }.not_to raise_error
+						expect{ DottedHash.new(a: 1, b: 2, c: 3, d: 4) }.to raise_error(RuntimeError, /attribu/)
+
+						expect{ DottedHash.new(a: 1, b: 2, c: {one: 1, two: 2, three: 3, four: 4, five: 5}) }.not_to raise_error
+						expect{ DottedHash.new(a: 1, b: 2, c: 3, d: {one: 1, two: 2, three: 3, four: 4, five: 5}) }.to raise_error(RuntimeError, /attribu/)
+					end
+				end
+			end
+
+			it "tests MAX_SIZE" do
+				stub_const("DottedHash::MAX_SIZE", 10)
+
+				expect{ DottedHash.new(a: "short") }.not_to raise_error
+				expect{ DottedHash.new(a: "najnevypocitavatelnejsi") }.to raise_error(/size/) 
+				expect{ DottedHash.new(a: "short", b: "short") }.to raise_error(/size/)
+				expect{ DottedHash.new(a: {b: "x", c: {d: "xxx"}}) }.to raise_error(/size/)
 			end
 		end
 

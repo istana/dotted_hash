@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.version       = DottedHash::VERSION
   spec.authors       = ["Ivan Stana"]
   spec.email         = ["stiipa@centrum.sk"]
-  spec.description   = %q{Recursive OpenStruct-like or Hash-like object. Based on Tire::Result::Item with addition of writing attributes.}
+  spec.description   = %q{Recursive OpenStruct-like or Hash-like object. Based on Tire::Result::Item with addition of writing attributes and security limits.}
   spec.summary       = %q{Recursive OpenStruct-like object.}
   spec.homepage      = "http://github.com/istana/dotted_hash"
   spec.license       = "MIT"

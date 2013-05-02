@@ -2,7 +2,7 @@
 
 Recursive OpenStruct-like or Hash-like object. Uses ActiveModel.
 
-Based on *Tire::Result::Item* with addition of writing attributes.
+Based on *Tire::Result::Item* with addition of writing attributes and security limits.
 
 ## Installation
 
@@ -70,7 +70,47 @@ recursively (also creates sub-DottedHashes if they don't exist)
     > d.class
     => Cannon
 
+## Set security for structure
+
+- *MAX_DEPTH* for maximal depth of whole tree (keys_depth+1), counted from 0.
+While it is not completely bulletproof, because depth can be set to wrong number if careless, it is enough in most of the time.
+
+- *MAX_ATTRS* to specify maximum count of attributes. Use integer for limit to all levels or use hash like this
+
+    MAX_ATTRS = {1 => 20, 2 => 5, default: 10}
+
+for limits to be applied to certain levels. *Default* is optional, if not present - limit is not set.
+
+- *MAX_SIZE* to limit structure size. Size is computed from JSON representation of *DottedHash*.
+Note that some objects may have much bigger representation in memory than in JSON.
+
+
+## JSON
+
+Because security uses JSON representation of DottedHash, use library like *Oj* or *Yajl* when under heavy load.
+
+DottedHash uses *ActiveSupport* which uses *MultiJson*...
+
+Which backend is used?
+
+    > MultiJson.adapter
+
+or
+
+    > ActiveSupport::JSON.backend
+
+Set backend
+
+    > MultiJson.adapter = :oj
+
+or
+
+    > ActiveSupport::JSON.backend = :yajl
+
+
+
 See source and tests for some more details.
+
 
 ## Contributing
 
