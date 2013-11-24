@@ -118,12 +118,7 @@ class DottedHash
 	# Returns +id+ of document
 	#
 	def id
-		@attributes[:_id] || @attributes[:id]
-	end
-
-	# Returns +type+ of document
-	def type
-		@attributes[:_type] || @attributes[:type]
+		@attributes[:id]
 	end
 
 	def persisted?
