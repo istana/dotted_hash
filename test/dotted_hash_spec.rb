@@ -25,17 +25,8 @@ describe DottedHash do
 		end
 
 		it "should have an 'id' method" do
-			a = DottedHash.new(_id: 1)
-			b = DottedHash.new(id: 1)
+			a = DottedHash.new(id: 1)
 			expect(a.id).to eq(1)
-			expect(b.id).to eq(1)
-		end
-
-		it "should have a 'type' method" do
-			a = DottedHash.new(_type: 'foo')
-			b = DottedHash.new(type: 'foo')
-			expect(a.type).to eq('foo')
-			expect(b.type).to eq('foo')
 		end
 
 		it "should respond to :to_indexed_json" do
