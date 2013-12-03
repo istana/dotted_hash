@@ -146,6 +146,12 @@ describe DottedHash do
 		it "should be inspectable" do
 			expect(@document.inspect).to match(/<DottedHash .* title|DottedHash .* author/)
 		end
+		
+		it "merge!" do
+			doc = @document.merge!(mergetest: 'foo')
+			expect(doc.mergetest).to eq('foo')
+			expect(doc.title).to eq('Test')
+		end
 
 		context "within Rails" do
 
