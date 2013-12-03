@@ -5,7 +5,3 @@ rvm:
   - "2.0.0"
   - rbx-2.2.1
   - jruby-19mode
-jdk:
-  - openjdk7
-  - oraclejdk7
-  - openjdk6
