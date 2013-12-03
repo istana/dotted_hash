@@ -41,6 +41,22 @@ class DottedHash
 			assign_value(key, value)
 		end
 	end
+	
+	# Merge with another hash
+	def merge!(obj)
+		if obj.respond_to? :to_h
+		  hash = obj.to_h
+		elsif obj.respond_to? :to_hash
+		  hash = obj.to_hash
+		else
+		  raise('Merge works only with hashlike object')
+		end
+		
+		hash.each do |key, value|
+			assign_value(key, value)
+		end
+		self
+	end
 
 	def assign_value(key, value)
 		max_attrs = if MAX_ATTRS.is_a?(Fixnum)
