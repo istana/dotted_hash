@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/istana/dotted_hash.png)](https://travis-ci.org/istana/dotted_hash)
+
 # DottedHash
 
 Recursive OpenStruct-like or Hash-like object. Uses ActiveModel.

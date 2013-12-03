@@ -19,6 +19,8 @@ task :test do
   end
 end
 
+task :default => [:test]
+
 require 'rdoc/task'
 Rake::RDocTask.new do |rd|
   rd.main = "README.md"
