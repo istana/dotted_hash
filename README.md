@@ -2,6 +2,8 @@
 
 # DottedHash
 
+** PLEASE USE HASHIE **
+
 Recursive OpenStruct-like or Hash-like object. Uses ActiveModel.
 
 Based on *Tire::Result::Item* with addition of writing attributes and security limits.
